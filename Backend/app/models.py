@@ -114,6 +114,10 @@ class Ticket(SQLModel, table=True):
     Amount: float
     OrderID: Optional[int] = Field(foreign_key="order.OrderID")
     SeatID: Optional[int] = Field(foreign_key="seat.SeatID")
+    # Direct link to the event this ticket is for. Kept optional/separate from
+    # Seat->Venue so a ticket can be resolved to "which event" without relying
+    # on a venue hosting only one event ever.
+    EventID: Optional[int] = Field(default=None, foreign_key="event.EventID")
 
 
 class UserEvent(SQLModel, table=True):
