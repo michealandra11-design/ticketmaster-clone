@@ -5,6 +5,7 @@ import SignIn from "../pages/auth/login";
 import SignUp from "../pages/auth/signup";
 import { EventDetails } from "../pages/event";
 import BookingPage from "../pages/booking";
+import MyTickets from "../pages/tickets";
 
 export const routes = [
   {
@@ -31,5 +32,9 @@ export const routes = [
   {
     path: "/events/booking/:eventID",
     element: <BookingPage />,
+  },
+  {
+    path: "/my-tickets",
+    element: <MyTickets />,
   },
 ];
