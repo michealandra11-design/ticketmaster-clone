@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ticketmaster-backend
+    runtime: docker
+    dockerfilePath: ./Backend/Dockerfile
+    dockerContext: ./Backend
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./ticketMasterDb.sqlite3
+
+  - type: web
+    name: ticketmaster-frontend
+    runtime: static
+    buildCommand: cd Frontend && npm install && npm run build
+    staticPublishPath: Frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
