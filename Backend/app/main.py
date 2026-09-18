@@ -20,8 +20,13 @@ app = FastAPI(
     description="API documentation for ticket master",
 )
 
-# Defining CORS origins for frontend communication (allows frontend to access API)
-origins = ["http://localhost:3000", "http://localhost:5173"]  # for frontend origin
+# Defining CORS origins for frontend communication (allows frontend to access API).
+# Includes local dev origins plus the deployed Render frontend URL.
+origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://ticketmaster-frontend-cfec.onrender.com",
+]
 
 # Adding CORS middleware to enable cross-origin resource sharing for specified origins
 app.add_middleware(
