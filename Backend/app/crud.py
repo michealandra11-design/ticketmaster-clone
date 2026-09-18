@@ -515,6 +515,73 @@ def delete_ticket(session: Session, ticket_id: int) -> None:
     session.commit()
 
 
+def get_tickets_by_user_id(session: Session, user_id: int) -> List[dict]:
+    """Returns tickets owned by a user (via their orders), enriched with the
+    event, venue, and seat details the frontend needs to render "My Tickets"
+    without extra round trips."""
+    statement = (
+        select(Ticket, Order, Event, Venue, Seat)
+        .join(Order, Ticket.OrderID == Order.OrderID)
+        .join(Event, Ticket.EventID == Event.EventID, isouter=True)
+        .join(Venue, Event.VenueID == Venue.VenueID, isouter=True)
+        .join(Seat, Ticket.SeatID == Seat.SeatID, isouter=True)
+        .where(Order.UserID == user_id)
+    )
+    rows = session.exec(statement).all()
+    results = []
+    for ticket, order, event, venue, seat in rows:
+        results.append(
+            {
+                "TicketID": ticket.TicketID,
+                "Number": ticket.Number,
+                "Amount": ticket.Amount,
+                "EventID": event.EventID if event else None,
+                "EventName": event.Name if event else "Unknown Event",
+                "EventDate": event.Date if event else None,
+                "EventImageUrl": event.ImageUrl if event else None,
+                "VenueName": venue.Name if venue else None,
+                "VenueLocation": venue.Location if venue else None,
+                "SeatSection": seat.Section if seat else None,
+                "SeatRow": seat.Row if seat else None,
+                "SeatNumber": seat.SeatNumber if seat else None,
+            }
+        )
+    return results
+
+
+def transfer_ticket(session: Session, ticket_id: int, recipient_email: str) -> dict:
+    """Transfers a ticket to another registered user by creating (or reusing)
+    an order under the recipient's account and re-pointing the ticket to it.
+    The ticket leaves the sender's "My Tickets" list and appears in the
+    recipient's."""
+    ticket = session.get(Ticket, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    recipient = session.exec(select(User).where(User.Email == recipient_email)).first()
+    if not recipient:
+        raise HTTPException(
+            status_code=404,
+            detail="No account found with that email. The recipient needs a ticketmaster account first.",
+        )
+
+    # Create a lightweight order under the recipient to hold the transferred ticket.
+    new_order = Order(TotalAmount=ticket.Amount, UserID=recipient.UserID, PaymentID=None)
+    session.add(new_order)
+    session.commit()
+    session.refresh(new_order)
+
+    ticket.OrderID = new_order.OrderID
+    session.add(ticket)
+    session.commit()
+    session.refresh(ticket)
+
+    return {
+        "message": f"Ticket {ticket.Number} transferred to {recipient_email}",
+        "TicketID": ticket.TicketID,
+    }
+
+
 # CRUD Operations for UserEvent (link between Users and Events)
 def add_user_event(session: Session, user_event: UserEvent) -> UserEvent:
     validate_required_fields(user_event, [])
