@@ -9,7 +9,7 @@ import {
   HStack,
   Text,
 } from "@chakra-ui/react";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaTicketAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 
@@ -45,13 +45,32 @@ const Header = () => {
             <Link href={`/category/${4}`} color="brand.secondary" fontSize="md">
               Family
             </Link>
+            {user && (
+              <Link
+                href="/my-tickets"
+                color="brand.secondary"
+                fontSize="md"
+                display="flex"
+                alignItems="center"
+              >
+                <Icon as={FaTicketAlt} mr={2} />
+                My Tickets
+              </Link>
+            )}
           </HStack>
         </Flex>
       </Flex>
 
       {/* Sign In / Register Button */}
       {user ? (
-        <Flex alignItems="center">
+        <Flex alignItems="center" gap={3}>
+          <Link
+            href="/my-tickets"
+            display={{ base: "flex", md: "none" }}
+            color="brand.secondary"
+          >
+            <Icon as={FaTicketAlt} boxSize={5} />
+          </Link>
           <Text color="brand.secondary" fontWeight={"900"}>
             Welcome, {user?.FirstName || "User"}!
           </Text>
