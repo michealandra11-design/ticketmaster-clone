@@ -273,10 +273,10 @@ def api_create_event(event: Event, session: Session = Depends(get_session)):
 
 @router.get("/events", response_model=list[Event], tags=["Events"])
 def api_get_events(session: Session = Depends(get_session)):
-    events = get_events(session)
-    if not events:
-        raise HTTPException(status_code=404, detail="No events present")
-    return events
+    # Returns an empty list instead of a 404 when there are no events yet,
+    # so the frontend can distinguish "no events in the database" from
+    # an actual server/connection error.
+    return get_events(session)
 
 
 @router.get("/events/{event_id}", response_model=Event, tags=["Events"])
