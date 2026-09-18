@@ -1,7 +1,7 @@
 # Importing necessary modules
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import create_db_and_tables
+from app.database import create_db_and_tables, seed_initial_events
 from app.api import router as api_router
 from contextlib import asynccontextmanager
 
@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()  # Setting up database tables when the app starts
+    seed_initial_events()  # Adds a few real upcoming events on first run only
     yield
 
 
