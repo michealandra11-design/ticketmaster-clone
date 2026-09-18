@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
+from pydantic import BaseModel
 from app.database import get_session
 from app.models import (
     User,
@@ -74,6 +75,8 @@ from app.crud import (
     get_users_without_tickets,
     get_events_with_low_tickets,
     get_highest_revenue_events,
+    get_tickets_by_user_id,
+    transfer_ticket,
 )
 
 # Initializing APIRouter for handling API routes
@@ -426,6 +429,25 @@ def api_update_ticket(
 def api_delete_ticket(ticket_id: int, session: Session = Depends(get_session)):
     delete_ticket(session, ticket_id)
     return {"message": "Ticket deleted successfully"}
+
+
+# "My Tickets" — tickets owned by a user, enriched with event/venue/seat info
+@router.get("/my_tickets/{user_id}", tags=["Tickets"])
+def api_get_my_tickets(user_id: int, session: Session = Depends(get_session)):
+    return get_tickets_by_user_id(session, user_id)
+
+
+class TransferTicketRequest(BaseModel):
+    recipient_email: str
+
+
+@router.post("/tickets/{ticket_id}/transfer", tags=["Tickets"])
+def api_transfer_ticket(
+    ticket_id: int,
+    body: TransferTicketRequest,
+    session: Session = Depends(get_session),
+):
+    return transfer_ticket(session, ticket_id, body.recipient_email)
 
 
 # UserEvent APIs
