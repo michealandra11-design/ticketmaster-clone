@@ -15,8 +15,11 @@ const useAuthStore = create((set) => ({
       set({ user: response.data, loading: false });
       return response.data; // Return data on success
     } catch (error) {
+      // FastAPI error responses use `detail`, not `message` — fall back to
+      // the raw error message (e.g. a network/timeout error) if there's no
+      // response at all.
       set({
-        error: error.response?.data?.message || "Signup failed",
+        error: error.response?.data?.detail || error.message || "Signup failed",
         loading: false,
       });
       throw error;
@@ -37,7 +40,7 @@ const useAuthStore = create((set) => ({
       return response.data; // Return data on success
     } catch (error) {
       set({
-        error: error.response?.data?.message || "Login failed",
+        error: error.response?.data?.detail || error.message || "Login failed",
         loading: false,
       });
       throw error;
