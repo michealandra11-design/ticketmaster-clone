@@ -39,9 +39,17 @@ function SignIn() {
       await login(formData);
       // Redirect or take further action after successful login
       navigate("/");
-      toast.success("Signup successful!");
+      toast.success("Signed in!");
     } catch (error) {
-      toast.error("Error during signin. Please try again.");
+      // Show the real reason (invalid credentials, timeout, network error,
+      // etc.) instead of a generic message, so failures are self-explanatory.
+      const reason =
+        error.response?.data?.detail ||
+        (error.code === "ECONNABORTED"
+          ? "The server is waking up from sleep — please try again in a moment."
+          : error.message) ||
+        "Sign in failed. Please try again.";
+      toast.error(reason);
     }
   };
 
@@ -126,6 +134,9 @@ function SignIn() {
               name="email"
               value={formData.email}
               placeholder="Email"
+              type="email"
+              autoCapitalize="none"
+              autoCorrect="off"
               mb={4}
               onChange={handleChange}
             />
