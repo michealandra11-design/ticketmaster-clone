@@ -17,3 +17,10 @@ services:
     envVars:
       - key: VITE_API_URL
         sync: false
+    routes:
+      # SPA fallback: React Router handles routes like /events/5 client-side,
+      # but the static host has no such file — rewrite every path to
+      # index.html so the app's own router can take over instead of 404ing.
+      - type: rewrite
+        source: /*
+        destination: /index.html
